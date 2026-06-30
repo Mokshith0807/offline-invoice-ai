@@ -18,20 +18,27 @@ from app.utils.logging import setup_logging
 logger = logging.getLogger(__name__)
 
 frontend_dist = Path(__file__).resolve().parent / "frontend" / "dist"
-_frontend_mounted = False
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global _frontend_mounted
     settings.ensure_dirs()
     setup_logging()
     logger.info(f"Starting {settings.app_name} v{settings.app_version}")
     init_db()
-    if frontend_dist.exists() and not _frontend_mounted:
+    if frontend_dist.exists():
         app.mount("/", StaticFiles(directory=str(frontend_dist), html=True), name="frontend")
-        _frontend_mounted = True
         logger.info(f"Serving frontend from {frontend_dist}")
+    else:
+        @app.get("/")
+        async def root():
+            return {
+                "app": settings.app_name,
+                "version": settings.app_version,
+                "docs": "/docs",
+                "health": "/api/health",
+            }
+        logger.info("Frontend dist not found — API-only mode")
     logger.info(f"Upload dir: {settings.upload_dir}")
     logger.info(f"Database dir: {settings.database_dir}")
     logger.info(f"Models dir: {settings.models_dir}")
@@ -57,16 +64,6 @@ app.add_middleware(
 )
 
 app.include_router(router, prefix="/api")
-
-
-@app.get("/")
-async def root():
-    return {
-        "app": settings.app_name,
-        "version": settings.app_version,
-        "docs": "/docs",
-        "health": "/api/health",
-    }
 
 
 if __name__ == "__main__":
