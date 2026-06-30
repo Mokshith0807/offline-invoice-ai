@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: offline-invoice-ai
+    runtime: docker
+    repo: https://github.com/YOUR_USERNAME/offline-invoice-ai
+    dockerfilePath: ./Dockerfile
+    dockerContext: ./
+    plan: free
+    envVars:
+      - key: DEBUG
+        value: "false"
+      - key: LLM_CONTEXT_SIZE
+        value: "2048"
+      - key: LLM_THREADS
+        value: "2"
+      - key: OCR_LANGUAGE
+        value: "eng"
+    healthCheckPath: /api/health
+    autoDeploy: true

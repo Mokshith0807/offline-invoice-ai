@@ -1,0 +1,33 @@
+app = "offline-invoice-ai"
+primary_region = "iad"
+
+[build]
+  dockerfile = "./Dockerfile"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[mounts]]
+  source = "data"
+  destination = "/app/database"
+  auto_delete = false
+
+[[mounts]]
+  source = "uploads"
+  destination = "/app/uploads"
+  auto_delete = false
+
+[[mounts]]
+  source = "models"
+  destination = "/app/models"
+  auto_delete = false
+
+[env]
+  DEBUG = "false"
+  LLM_CONTEXT_SIZE = "2048"
+  LLM_THREADS = "2"
+  OCR_LANGUAGE = "eng"
